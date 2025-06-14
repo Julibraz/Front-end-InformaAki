@@ -1,19 +1,23 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lista de Ocorrências</title>
-    <link rel="stylesheet" href="/frontend/css/ocorrencias.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lista de Ocorrências</title>
+  <link rel="stylesheet" href="../css/ocorrencias.css">
 </head>
 <body>
-    <header>
-        <h1>Ocorrências</h1>
-        <button id="logout-btn">Sair</button>
-    </header>
-    <main>
-        <section id="ocorrencias-container"></section>
-    </main>
-    <script src="../js/ocorrencias.js"></script>
+  <header>
+    <h1>Ocorrências</h1>
+    <button id="logout-btn">Sair</button>
+  </header>
+  <main>
+    <div id="filtros">
+      <button class="filtro-btn ativo" id="btn-todas">Todas</button>
+      <button class="filtro-btn" id="btn-minhas">Minhas Ocorrências</button>
+    </div>
+    <section id="ocorrencias-container"></section>
+  </main>
+  <script src="../js/ocorrencias.js"></script>
 </body>
 </html>
