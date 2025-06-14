@@ -95,5 +95,9 @@ document.addEventListener('DOMContentLoaded', () => {
       window.location.href = '../index.html';
     });
 
+    document.getElementById('btn-cadastrar').addEventListener('click', () => {
+        window.location.href = '../html/cadastrar.html';
+      });
+
 });
   

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Cadastrar Ocorrência</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="../css/cadastrar.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>Nova Ocorrência</h1>
+    
+    <form id="form-ocorrencia" enctype="multipart/form-data">
+      <label for="tipo">Tipo:</label>
+      <input type="text" id="tipo" name="tipo" required>
+
+      <label for="descricao">Descrição:</label>
+      <textarea id="descricao" name="descricao" required></textarea>
+
+      <label for="endereco">Endereço:</label>
+      <input type="text" id="endereco" placeholder="Digite um endereço">
+
+      <button type="button" id="btn-buscar-endereco">Buscar Endereço</button>
+
+      <div id="map" style="height: 300px;"></div>
+
+      <label for="imagem">Foto (opcional):</label>
+      <input type="file" id="imagem" name="imagem" accept="image/*">
+
+      <input type="hidden" id="latitude" name="latitude">
+      <input type="hidden" id="longitude" name="longitude">
+
+      <button type="submit">Salvar Ocorrência</button>
+    </form>
+
+    <button id="btn-voltar">Voltar</button>
+  </div>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="../js/cadastrar.js"></script>
+</body>
+</html>
