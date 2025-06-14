@@ -29,7 +29,7 @@ form.addEventListener('submit', async (e) => {
     if (modoLogin) {
       localStorage.setItem('token', dados.token);
       localStorage.setItem('usuario', JSON.stringify(dados.usuario));
-      window.location.href = 'ocorrencias.html';
+      window.location.href = 'html/ocorrencias.html';
     } else {
       alert('Cadastro realizado com sucesso! Faça login.');
       toggleForm();
@@ -45,15 +45,18 @@ toggleLink.addEventListener('click', (e) => {
 });
 
 function toggleForm() {
-  modoLogin = !modoLogin;
-  formTitle.textContent = modoLogin ? 'Login' : 'Cadastro';
-  toggleText.innerHTML = modoLogin ?
-    'Não tem conta? <a href="#" id="toggle-link">Cadastre-se</a>' :
-    'Já tem conta? <a href="#" id="toggle-link">Entrar</a>';
-  nomeInput.classList.toggle('hidden', modoLogin);
-  //reatribuir evento ao novo link
-  document.getElementById('toggle-link').addEventListener('click', (e) => {
-    e.preventDefault();
-    toggleForm();
-  });
-}
+    modoLogin = !modoLogin;
+    formTitle.textContent = modoLogin ? 'Login' : 'Cadastro';
+    toggleText.innerHTML = modoLogin ?
+      'Não tem conta? <a href="#" id="toggle-link">Cadastre-se</a>' :
+      'Já tem conta? <a href="#" id="toggle-link">Entrar</a>';
+  
+    nomeInput.classList.toggle('hidden', modoLogin);
+    nomeInput.required = !modoLogin; // <-- Isso resolve
+  
+    //Reatribuir evento ao novo link 
+    document.getElementById('toggle-link').addEventListener('click', (e) => {
+      e.preventDefault();
+      toggleForm();
+    });
+  }
