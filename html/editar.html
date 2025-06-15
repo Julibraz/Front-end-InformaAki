@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Editar Ocorrência</title>
+  <link rel="stylesheet" href="../css/estilos.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+</head>
+<body>
+  <h1>Editar Ocorrência</h1>
+  <form id="form-editar" enctype="multipart/form-data">
+    <label>Tipo:
+      <input type="text" name="tipo" id="tipo" required>
+    </label><br>
+
+    <label>Descrição:
+      <textarea name="descricao" id="descricao" required></textarea>
+    </label><br>
+
+    <label>Endereço:
+      <input type="text" id="endereco" placeholder="Digite um endereço ou clique no mapa" />
+    </label><br>
+
+    <div id="map" style="height: 300px; margin-bottom: 10px;"></div>
+
+    <label>Imagem (opcional):
+      <input type="file" name="foto" id="foto" accept="image/*">
+    </label><br>
+
+    <button type="submit">Salvar Alterações</button>
+    <button type="button" id="btn-voltar">Cancelar</button>
+  </form>
+
+  <script src="../js/editar.js"></script>
+</body>
+</html>

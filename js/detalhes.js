@@ -57,17 +57,37 @@ document.addEventListener('DOMContentLoaded', () => {
           .openPopup();
   
         //Verificações de permissão
-        const acoes = document.getElementById('acoes');
-        if (usuario.id === dados.usuario_id) {
-          acoes.innerHTML = `
+        console.log('Usuário carregado:', usuario);
+        console.log('Dados da ocorrência:', dados);
+        console.log('usuario.id:', usuario.id, 'dados.usuario_id:', dados.usuario_id);
+
+        const ehDono = Number(usuario.id) === Number(dados.usuario_id);
+        const ehAdmin = usuario.tipo_usuario && usuario.tipo_usuario.toLowerCase() === 'admin';
+
+        console.log('ehDono:', ehDono, 'ehAdmin:', ehAdmin);
+
+        let html = '';
+
+        if (ehDono) {   
+        html += `
             <button onclick="editarOcorrencia(${dados.id})">Editar</button>
             <button onclick="deletarOcorrencia(${dados.id})">Excluir</button>
-          `;
-        } else if (usuario.tipo === 'admin') {
-          acoes.innerHTML = `
-            <button onclick="editarStatus(${dados.id}, '${dados.status}')">Alterar Status</button>
+        `;
+        }
+
+        if (ehAdmin) {  
+          html += `
+    <button onclick="editarStatus(${dados.id}, '${dados.status}')">Alterar Status</button>
           `;
         }
+
+        if (!html) {
+          html = '<p>Nenhuma ação disponível para este usuário.</p>';
+        }
+
+        console.log('HTML acoes:', html);
+
+        acoes.innerHTML = html;
   
       } catch (erro) {
         detalhesContainer.innerHTML = `<p>Erro ao carregar detalhes: ${erro.message}</p>`;
@@ -75,7 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   
     btnVoltar.addEventListener('click', () => {
-      window.history.back();
+      window.location.href = 'ocorrencias.html';
     });
   
     buscarDetalhes();
@@ -83,7 +103,7 @@ document.addEventListener('DOMContentLoaded', () => {
   
  
 function editarOcorrencia(id) {
-alert(`Redirecionar para edição de ocorrência ${id}`);
+    window.location.href = `editar.html?id=${id}`;
 }
   
 //faz a requisição para deletar a ocorrência
@@ -106,25 +126,26 @@ if (confirm('Deseja realmente excluir esta ocorrência?')) {
   
 //Função para editar o status da ocorrência
 function editarStatus(id, statusAtual) {
-const novo = prompt('Novo status:', statusAtual);
-if (!novo || novo === statusAtual) return;
+    abrirModalStatus(statusAtual, (novo) => {
+      if (!novo || novo === statusAtual) return;
   
-//faz a requisição para atualizar o status da ocorrência
-fetch(`http://localhost:3000/api/ocorrencias/${id}`, {
-    method: 'PUT',
-    headers: {
-    'Content-Type': 'application/json',
-    Authorization: `Bearer ${localStorage.getItem('token')}`
-    },
-    body: JSON.stringify({ status: novo })
-})
-    .then(res => {
-    if (!res.ok) throw new Error('Erro ao atualizar status');
-    alert('Status atualizado com sucesso.');
-    location.reload();
-    })
-    .catch(err => alert('Erro: ' + err.message));
+      fetch(`http://localhost:3000/api/ocorrencias/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ status: novo })
+      })
+        .then(res => {
+          if (!res.ok) throw new Error('Erro ao atualizar status');
+          alert('Status atualizado com sucesso.');
+          location.reload();
+        })
+        .catch(err => alert('Erro: ' + err.message));
+    });
 }
+  
 
 //faz a busca do endereço da ocorrência com base na latitude e longitude
 async function buscarEndereco(lat, lng) {
@@ -143,6 +164,35 @@ async function buscarEndereco(lat, lng) {
     console.error('Erro ao buscar endereço:', erro);
     return 'Endereço não encontrado';
     }
+}
+
+function abrirModalStatus(statusAtual, callback) {
+    const modal = document.getElementById('modal-status');
+    const select = document.getElementById('select-status');
+    const btnConfirmar = document.getElementById('btn-confirmar');
+    const btnCancelar = document.getElementById('btn-cancelar');
+  
+    select.value = statusAtual;
+    modal.style.display = 'flex';
+  
+    function confirmar() {
+      const novoStatus = select.value;
+      fecharModal();
+      callback(novoStatus);
+    }
+  
+    function cancelar() {
+      fecharModal();
+    }
+  
+    function fecharModal() {
+      modal.style.display = 'none';
+      btnConfirmar.removeEventListener('click', confirmar);
+      btnCancelar.removeEventListener('click', cancelar);
+    }
+  
+    btnConfirmar.addEventListener('click', confirmar);
+    btnCancelar.addEventListener('click', cancelar);
 }
 
 

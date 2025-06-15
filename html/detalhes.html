@@ -16,6 +16,20 @@
     <section id="detalhes-container"></section>
     <div id="map"></div>
   </main>
+  <div id="modal-status" class="modal" style="display: none;">
+    <div class="modal-content">
+      <h3>Alterar Status</h3>
+      <select id="select-status">
+        <option value="Aberta">Aberta</option>
+        <option value="Em andamento">Em andamento</option>
+        <option value="Resolvida">Resolvida</option>
+      </select>
+      <div style="margin-top: 10px;">
+        <button id="btn-confirmar">Confirmar</button>
+        <button id="btn-cancelar">Cancelar</button>
+      </div>
+    </div>
+  </div>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="../js/detalhes.js"></script>
 </body>
