@@ -6,6 +6,20 @@ const nomeInput = document.getElementById('nome');
 
 let modoLogin = true;
 
+//Função para mostrar notificação
+function showNotification(message, isError = false) {
+  const notification = document.getElementById('notification');
+  const notificationMessage = document.getElementById('notification-message');
+  
+  notification.className = isError ? 'notification error' : 'notification success';
+  notificationMessage.textContent = message;
+  notification.classList.remove('hidden');
+  
+  setTimeout(() => {
+    notification.classList.add('hidden');
+  }, 3000);
+}
+
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
   const email = document.getElementById('email').value;
@@ -29,13 +43,16 @@ form.addEventListener('submit', async (e) => {
     if (modoLogin) {
       localStorage.setItem('token', dados.token);
       localStorage.setItem('usuario', JSON.stringify(dados.usuario));
-      window.location.href = 'html/ocorrencias.html';
+      showNotification('Login realizado com sucesso! Redirecionando...');
+      setTimeout(() => {
+        window.location.href = 'html/ocorrencias.html';
+      }, 1500);
     } else {
-      alert('Cadastro realizado com sucesso! Faça login.');
+      showNotification('Cadastro realizado com sucesso! Faça login.');
       toggleForm();
     }
   } catch (erro) {
-    alert('Erro: ' + erro.message);
+    showNotification('Erro: ' + erro.message, true);
   }
 });
 

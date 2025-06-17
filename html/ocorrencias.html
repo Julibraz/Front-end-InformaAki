@@ -3,24 +3,81 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Lista de Ocorrências</title>
+  <title>Lista de Ocorrências | Sistema</title>
   <link rel="stylesheet" href="../css/ocorrencias.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
-  <header>
-    <h1>Ocorrências</h1>
-    <button id="logout-btn">Sair</button>
-  </header>
-  <main>
-    <div id="filtros">
-      <button class="filtro-btn ativo" id="btn-todas">Todas</button>
-      <button class="filtro-btn" id="btn-minhas">Minhas Ocorrências</button>
-    </div>
-    <div class="acoes-topo">
-        <button id="btn-cadastrar">Nova Ocorrência</button>
+  <div class="notification-container" id="notification"></div>
+  
+  <header class="main-header">
+    <div class="header-content">
+      <h1><i class="fas fa-list-alt"></i> Ocorrências</h1>
+      <div class="user-actions">
+        <span class="user-name" id="user-name"></span>
+        <button id="logout-btn" class="logout-btn">
+          <i class="fas fa-sign-out-alt"></i> Sair
+        </button>
       </div>
-    <section id="ocorrencias-container"></section>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="filters-container">
+      <div class="filter-buttons">
+        <button class="filter-btn active" id="btn-todas">
+          <i class="fas fa-list"></i> Todas
+        </button>
+        <button class="filter-btn" id="btn-minhas">
+          <i class="fas fa-user"></i> Minhas Ocorrências
+        </button>
+      </div>
+      
+      <div class="search-container">
+        <input type="text" id="search-input" placeholder="Buscar ocorrências...">
+        <button id="search-btn"><i class="fas fa-search"></i></button>
+      </div>
+    </div>
+
+    <div class="actions-container">
+      <button id="btn-cadastrar" class="primary-btn">
+        <i class="fas fa-plus"></i> Nova Ocorrência
+      </button>
+    </div>
+
+    <div class="status-summary">
+      <div class="status-card total" id="status-total">
+        <span class="status-count" id="total-count">0</span>
+        <span class="status-label">Total</span>
+      </div>
+      <div class="status-card aberto" id="status-aberto">
+        <span class="status-count" id="aberto-count">0</span>
+        <span class="status-label">Abertas</span>
+      </div>
+      <div class="status-card andamento" id="status-andamento">
+        <span class="status-count" id="andamento-count">0</span>
+        <span class="status-label">Em Andamento</span>
+      </div>
+      <div class="status-card resolvido" id="status-resolvido">
+        <span class="status-count" id="resolvido-count">0</span>
+        <span class="status-label">Resolvidas</span>
+      </div>
+    </div>
+
+    <section id="ocorrencias-container" class="ocorrencias-grid"></section>
+
+    <div class="pagination-container">
+      <button id="prev-page" class="pagination-btn" disabled>
+        <i class="fas fa-chevron-left"></i>
+      </button>
+      <span id="page-info">Página 1</span>
+      <button id="next-page" class="pagination-btn">
+        <i class="fas fa-chevron-right"></i>
+      </button>
+    </div>
   </main>
+
   <script src="../js/ocorrencias.js"></script>
 </body>
 </html>

@@ -56,10 +56,6 @@ document.addEventListener('DOMContentLoaded', () => {
           .bindPopup('Local da ocorrência')
           .openPopup();
   
-        //Verificações de permissão
-        console.log('Usuário carregado:', usuario);
-        console.log('Dados da ocorrência:', dados);
-        console.log('usuario.id:', usuario.id, 'dados.usuario_id:', dados.usuario_id);
 
         const ehDono = Number(usuario.id) === Number(dados.usuario_id);
         const ehAdmin = usuario.tipo_usuario && usuario.tipo_usuario.toLowerCase() === 'admin';
@@ -108,21 +104,24 @@ function editarOcorrencia(id) {
   
 //faz a requisição para deletar a ocorrência
 function deletarOcorrencia(id) {
-if (confirm('Deseja realmente excluir esta ocorrência?')) {
-    fetch(`http://localhost:3000/api/ocorrencias/${id}`, {
-    method: 'DELETE',
-    headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`
-    }
-    })
-    .then(res => {
+  showConfirm('Deseja realmente excluir esta ocorrência?', (confirmado) => {
+    if (confirmado) {
+      fetch(`http://localhost:3000/api/ocorrencias/${id}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        }
+      })
+      .then(res => {
         if (!res.ok) throw new Error('Erro ao excluir ocorrência');
-        alert('Ocorrência excluída com sucesso.');
+        showToast('Ocorrência excluída com sucesso.', 'sucesso');
         window.location.href = 'ocorrencias.html';
-    })
-    .catch(err => alert('Erro ao excluir: ' + err.message));
+      })
+      .catch(err => showToast('Erro: ' + err.message, 'erro'));
+    }
+  });
 }
-}
+
   
 //Função para editar o status da ocorrência
 function editarStatus(id, statusAtual) {

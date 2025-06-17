@@ -5,17 +5,32 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login / Cadastro</title>
   <link rel="stylesheet" href="css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
   <div class="container">
-    <h1 id="form-title">Login</h1>
+    <div class="form-header">
+      <h1 id="form-title">Login</h1>
+    </div>
     <form id="auth-form">
-      <input type="text" id="nome" placeholder="Nome" class="hidden" />
-      <input type="email" id="email" placeholder="Email" required />
-      <input type="password" id="senha" placeholder="Senha" required />
-      <button type="submit">Entrar</button>
+      <div class="input-group">
+        <input type="text" id="nome" placeholder="Nome" class="hidden" />
+      </div>
+      <div class="input-group">
+        <input type="email" id="email" placeholder="Email" required />
+      </div>
+      <div class="input-group">
+        <input type="password" id="senha" placeholder="Senha" required />
+      </div>
+      <button type="submit" class="submit-btn">Entrar</button>
     </form>
-    <p id="toggle-text">Não tem conta? <a href="#" id="toggle-link">Cadastre-se</a></p>
+    <p id="toggle-text" class="toggle-text">Não tem conta? <a href="#" id="toggle-link">Cadastre-se</a></p>
+  </div>
+
+  <div id="notification" class="notification hidden">
+    <div class="notification-content">
+      <span id="notification-message"></span>
+    </div>
   </div>
 
   <script src="js/script.js"></script>
