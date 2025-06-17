@@ -122,7 +122,7 @@ function renderizarOcorrencias(ocorrencias) {
                   <p>${ocorrencia.descricao}</p>
               </div>
               ${ocorrencia.foto_url ? `
-                  <img src="http://localhost:3000/uploads/${ocorrencia.foto_url}" alt="Imagem da ocorrência" class="foto-ocorrencia">
+                  <img src="http://localhost:3000${ocorrencia.foto_url}" alt="Imagem da ocorrência" class="foto-ocorrencia">
               ` : ''}
           </div>
           <div class="card-footer">

@@ -75,7 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const fotoContainer = document.getElementById('foto-container');
       if (ocorrencia.foto_url) {
           fotoContainer.innerHTML = `
-              <img src="http://localhost:3000/uploads/${ocorrencia.foto_url}" 
+              <img src="http://localhost:3000${ocorrencia.foto_url}" 
                    alt="Imagem da ocorrência" 
                    class="foto-ocorrencia">
           `;

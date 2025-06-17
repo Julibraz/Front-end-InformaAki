@@ -1,37 +1,101 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Editar Ocorrência</title>
-  <link rel="stylesheet" href="../css/estilos.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <link rel="stylesheet" href="../css/editar.css">
 </head>
 <body>
-  <h1>Editar Ocorrência</h1>
-  <form id="form-editar" enctype="multipart/form-data">
-    <label>Tipo:
-      <input type="text" name="tipo" id="tipo" required>
-    </label><br>
+  <div class="container">
+    <header class="page-header">
+      <h1><i class="fas fa-edit"></i> Editar Ocorrência</h1>
+      <button id="btn-voltar" class="btn-secondary">
+        <i class="fas fa-arrow-left"></i> Cancelar
+      </button>
+    </header>
+    
+    <form id="form-editar" enctype="multipart/form-data">
+      <div class="form-group">
+        <label for="tipo">Tipo de Ocorrência:</label>
+        <select id="tipo" name="tipo" required>
+          <option value="">Selecione um tipo</option>
+          <option value="Buraco na via">Buraco na via</option>
+          <option value="Iluminação pública">Iluminação pública</option>
+          <option value="Foco de mosquito/Dengue">Foco de mosquito/Dengue</option>
+          <option value="Alagamento">Alagamento</option>
+          <option value="Sinalização (trânsito/placas)">Sinalização (trânsito/placas)</option>
+          <option value="Lixo/Entulho">Lixo/Entulho</option>
+          <option value="Esgoto a céu aberto">Esgoto a céu aberto</option>
+          <option value="Outro">Outro</option>
+        </select>
+      </div>
 
-    <label>Descrição:
-      <textarea name="descricao" id="descricao" required></textarea>
-    </label><br>
+      <div class="form-group">
+        <label for="descricao">Descrição detalhada:</label>
+        <textarea id="descricao" name="descricao" placeholder="Descreva o problema com detalhes..." required></textarea>
+      </div>
 
-    <label>Endereço:
-      <input type="text" id="endereco" placeholder="Digite um endereço ou clique no mapa" />
-    </label><br>
+      <div class="form-group">
+        <label for="endereco">Localização:</label>
+        <div class="address-search">
+          <input type="text" id="endereco" placeholder="Digite um endereço ou arraste o marcador no mapa">
+          <button type="button" id="btn-buscar-endereco" class="btn-icon">
+            <i class="fas fa-search"></i> Buscar
+          </button>
+        </div>
+      </div>
 
-    <div id="map" style="height: 300px; margin-bottom: 10px;"></div>
+      <div class="map-container">
+        <div id="map"></div>
+        <div class="map-actions">
+          <button type="button" id="btn-usar-localizacao" class="btn-icon">
+            <i class="fas fa-location-arrow"></i> Usar minha localização
+          </button>
+        </div>
+      </div>
 
-    <label>Imagem (opcional):
-      <input type="file" name="foto" id="foto" accept="image/*">
-    </label><br>
+      <div class="form-group">
+        <label>Imagem atual:</label>
+        <div id="imagem-atual" class="image-preview"></div>
+        
+        <label for="foto">Alterar imagem (opcional):</label>
+        <div class="file-upload">
+          <label for="foto" class="upload-area">
+            <i class="fas fa-camera"></i>
+            <span>Clique para alterar a foto</span>
+            <input type="file" id="foto" name="foto" accept="image/*">
+          </label>
+          <div id="preview-container" class="image-preview"></div>
+        </div>
+      </div>
 
-    <button type="submit">Salvar Alterações</button>
-    <button type="button" id="btn-voltar">Cancelar</button>
-  </form>
+      <input type="hidden" id="latitude" name="latitude">
+      <input type="hidden" id="longitude" name="longitude">
 
+      <div class="form-actions">
+        <button type="submit" class="btn-primary">
+          <i class="fas fa-save"></i> Salvar Alterações
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Modal de confirmação -->
+  <div id="modal-confirm" class="modal">
+    <div class="modal-content">
+      <span class="close-modal">&times;</span>
+      <h3 id="modal-title"></h3>
+      <p id="modal-message"></p>
+      <div class="modal-actions">
+        <button id="modal-confirm-btn" class="btn-primary">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script src="../js/editar.js"></script>
 </body>
 </html>
