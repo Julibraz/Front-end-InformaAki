@@ -1,198 +1,257 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const detalhesContainer = document.getElementById('detalhes-container');
-    const btnVoltar = document.getElementById('btn-voltar');
-  
-    const token = localStorage.getItem('token');
-    const usuario = JSON.parse(localStorage.getItem('usuario'));
-  
-    if (!token) {
-      alert('Sessão expirada. Faça login novamente.');
-      window.location.href = '../index.html';
+
+  const btnVoltar = document.getElementById('btn-voltar');
+  const token = localStorage.getItem('token');
+  const usuario = JSON.parse(localStorage.getItem('usuario'));
+  const ocorrenciaId = new URLSearchParams(window.location.search).get('id');
+
+  //autenticação
+  if (!token) {
+      showNotification('Sessão expirada. Faça login novamente.', true);
+      setTimeout(() => {
+          window.location.href = '../index.html';
+      }, 1500);
       return;
-    }
-  
-    function getQueryParam(param) {
-      const params = new URLSearchParams(window.location.search);
-      return params.get(param);
-    }
-  
-    const ocorrenciaId = getQueryParam('id');
-  
-    if (!ocorrenciaId) {
-      detalhesContainer.innerHTML = '<p>ID da ocorrência não informado.</p>';
+  }
+
+  if (!ocorrenciaId) {
+      showNotification('ID da ocorrência não informado.', true);
       return;
-    }
-  
-    async function buscarDetalhes() {
+  }
+
+  carregarDetalhes();
+
+  btnVoltar.addEventListener('click', () => {
+      window.location.href = 'ocorrencias.html';
+  });
+
+  //modal de confirmação
+  document.getElementById('btn-confirmar-exclusao').addEventListener('click', () => {
+      if (window.ocorrenciaParaExcluir) {
+          deletarOcorrencia(window.ocorrenciaParaExcluir);
+      }
+      fecharModal('confirm-modal');
+  });
+
+  document.getElementById('btn-cancelar-exclusao').addEventListener('click', () => {
+      fecharModal('confirm-modal');
+  });
+
+  //carrega detalhes
+  async function carregarDetalhes() {
       try {
-        const resposta = await fetch(`http://localhost:3000/api/ocorrencias/${ocorrenciaId}`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
-  
-        if (!resposta.ok) throw new Error('Erro ao carregar detalhes da ocorrência');
-  
-        const dados = await resposta.json();
-  
-        detalhesContainer.innerHTML = `
-          <h2>${dados.tipo}</h2>
-          <p><strong>Descrição:</strong> ${dados.descricao}</p>
-          <p><strong>Status:</strong> ${dados.status}</p>
-          ${dados.foto_url ? `<img src="http://localhost:3000/uploads/${dados.foto_url}" alt="Imagem da ocorrência" class="foto-ocorrencia">` : ''}
-          <p><strong>Registrada em:</strong> ${new Date(dados.data_registro).toLocaleString()}</p>
-          <p id="endereco"><strong>Localização:</strong> buscando endereço...</p>
-          <div id="map" style="height: 300px; margin: 15px 0;"></div>
-          <div id="acoes" style="margin-top: 20px;"></div>
-        `;
-        const enderecoEl = document.getElementById('endereco');
-        const endereco = await buscarEndereco(dados.lat, dados.lng);
-        enderecoEl.innerHTML = `<strong>Endereço:</strong> ${endereco}`;
-  
-        //Mapa com Leaflet
-        const map = L.map('map').setView([dados.lat, dados.lng], 16);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-        L.marker([dados.lat, dados.lng]).addTo(map)
+          const resposta = await fetch(`http://localhost:3000/api/ocorrencias/${ocorrenciaId}`, {
+              headers: { Authorization: `Bearer ${token}` }
+          });
+
+          if (!resposta.ok) throw new Error('Erro ao carregar detalhes da ocorrência');
+
+          const ocorrencia = await resposta.json();
+          exibirDetalhes(ocorrencia);
+          inicializarMapa(ocorrencia.lat, ocorrencia.lng);
+          configurarAcoes(ocorrencia);
+          
+      } catch (erro) {
+          showNotification(`Erro ao carregar detalhes: ${erro.message}`, true);
+      }
+  }
+
+  //exibe detalhes
+  function exibirDetalhes(ocorrencia) {
+      document.getElementById('status-badge').className = `status-badge ${ocorrencia.status.toLowerCase().replace(' ', '-')}`;
+      document.getElementById('status-badge').textContent = ocorrencia.status;
+      document.getElementById('ocorrencia-tipo').textContent = ocorrencia.tipo;
+      document.getElementById('ocorrencia-data').textContent = `Registrada em: ${new Date(ocorrencia.data_registro).toLocaleString()}`;
+      document.getElementById('ocorrencia-id').textContent = `ID: ${ocorrencia.id}`;
+      document.getElementById('ocorrencia-usuario').textContent = ocorrencia.usuario_nome || 'Usuário anônimo';
+      document.getElementById('ocorrencia-descricao').textContent = ocorrencia.descricao;
+
+      buscarEndereco(ocorrencia.lat, ocorrencia.lng)
+          .then(endereco => {
+              document.getElementById('ocorrencia-endereco').textContent = endereco;
+          });
+
+      //Carrega a foto se existir
+      const fotoContainer = document.getElementById('foto-container');
+      if (ocorrencia.foto_url) {
+          fotoContainer.innerHTML = `
+              <img src="http://localhost:3000/uploads/${ocorrencia.foto_url}" 
+                   alt="Imagem da ocorrência" 
+                   class="foto-ocorrencia">
+          `;
+      } else {
+          document.getElementById('foto-section').style.display = 'none';
+      }
+  }
+
+  //inicializa o mapa
+  function inicializarMapa(lat, lng) {
+      const map = L.map('map').setView([lat, lng], 16);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+      }).addTo(map);
+      
+      L.marker([lat, lng]).addTo(map)
           .bindPopup('Local da ocorrência')
           .openPopup();
-  
+  }
 
-        const ehDono = Number(usuario.id) === Number(dados.usuario_id);
-        const ehAdmin = usuario.tipo_usuario && usuario.tipo_usuario.toLowerCase() === 'admin';
+  //configurar ações 
+  function configurarAcoes(ocorrencia) {
+      const acoesContainer = document.getElementById('acoes');
+      const ehDono = Number(usuario.id) === Number(ocorrencia.usuario_id);
+      const ehAdmin = usuario.tipo_usuario && usuario.tipo_usuario.toLowerCase() === 'admin';
 
-        console.log('ehDono:', ehDono, 'ehAdmin:', ehAdmin);
+      let html = '';
 
-        let html = '';
-
-        if (ehDono) {   
-        html += `
-            <button onclick="editarOcorrencia(${dados.id})">Editar</button>
-            <button onclick="deletarOcorrencia(${dados.id})">Excluir</button>
-        `;
-        }
-
-        if (ehAdmin) {  
+      if (ehDono) {
           html += `
-    <button onclick="editarStatus(${dados.id}, '${dados.status}')">Alterar Status</button>
+              <button class="action-btn primary" onclick="editarOcorrencia(${ocorrencia.id})">
+                  <i class="fas fa-edit"></i> Editar
+              </button>
+              <button class="action-btn danger" onclick="confirmarExclusao(${ocorrencia.id})">
+                  <i class="fas fa-trash-alt"></i> Excluir
+              </button>
           `;
-        }
-
-        if (!html) {
-          html = '<p>Nenhuma ação disponível para este usuário.</p>';
-        }
-
-        console.log('HTML acoes:', html);
-
-        acoes.innerHTML = html;
-  
-      } catch (erro) {
-        detalhesContainer.innerHTML = `<p>Erro ao carregar detalhes: ${erro.message}</p>`;
       }
-    }
-  
-    btnVoltar.addEventListener('click', () => {
-      window.location.href = 'ocorrencias.html';
-    });
-  
-    buscarDetalhes();
+
+      if (ehAdmin) {
+          html += `
+              <button class="action-btn warning" onclick="abrirModalStatus(${ocorrencia.id}, '${ocorrencia.status}')">
+                  <i class="fas fa-sync-alt"></i> Alterar Status
+              </button>
+          `;
+      }
+
+      acoesContainer.innerHTML = html || '<p class="no-actions">Nenhuma ação disponível para este usuário.</p>';
+  }
 });
-  
- 
-function editarOcorrencia(id) {
-    window.location.href = `editar.html?id=${id}`;
-}
-  
-//faz a requisição para deletar a ocorrência
-function deletarOcorrencia(id) {
-  showConfirm('Deseja realmente excluir esta ocorrência?', (confirmado) => {
-    if (confirmado) {
-      fetch(`http://localhost:3000/api/ocorrencias/${id}`, {
-        method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        }
-      })
-      .then(res => {
-        if (!res.ok) throw new Error('Erro ao excluir ocorrência');
-        showToast('Ocorrência excluída com sucesso.', 'sucesso');
-        window.location.href = 'ocorrencias.html';
-      })
-      .catch(err => showToast('Erro: ' + err.message, 'erro'));
-    }
-  });
+
+//Funçoes globais
+function abrirModal(modalId) {
+  document.getElementById(modalId).classList.add('active');
 }
 
-  
-//Função para editar o status da ocorrência
-function editarStatus(id, statusAtual) {
-    abrirModalStatus(statusAtual, (novo) => {
-      if (!novo || novo === statusAtual) return;
-  
-      fetch(`http://localhost:3000/api/ocorrencias/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({ status: novo })
-      })
-        .then(res => {
-          if (!res.ok) throw new Error('Erro ao atualizar status');
-          alert('Status atualizado com sucesso.');
-          location.reload();
-        })
-        .catch(err => alert('Erro: ' + err.message));
-    });
+function fecharModal(modalId) {
+  document.getElementById(modalId).classList.remove('active');
+  window.ocorrenciaParaExcluir = null;
 }
-  
 
-//faz a busca do endereço da ocorrência com base na latitude e longitude
+function confirmarExclusao(id) {
+  window.ocorrenciaParaExcluir = id;
+  abrirModal('confirm-modal');
+}
+
 async function buscarEndereco(lat, lng) {
-    const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`;
-    try {
-    const response = await fetch(url, {
-        headers: {
-        'Accept-Language': 'pt-BR', 
-        }
-    });
-
-    if (!response.ok) throw new Error('Erro ao buscar endereço');
-    const data = await response.json();
-    return data.display_name;
-    } catch (erro) {
-    console.error('Erro ao buscar endereço:', erro);
-    return 'Endereço não encontrado';
-    }
+  try {
+      const response = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`,
+          { headers: { 'Accept-Language': 'pt-BR' } }
+      );
+      
+      if (!response.ok) throw new Error('Erro ao buscar endereço');
+      const data = await response.json();
+      return data.display_name || 'Endereço não encontrado';
+  } catch (erro) {
+      console.error('Erro ao buscar endereço:', erro);
+      return 'Endereço não disponível';
+  }
 }
 
-function abrirModalStatus(statusAtual, callback) {
-    const modal = document.getElementById('modal-status');
-    const select = document.getElementById('select-status');
-    const btnConfirmar = document.getElementById('btn-confirmar');
-    const btnCancelar = document.getElementById('btn-cancelar');
+//mostra notificação
+function showNotification(message, isError = false) {
+  const notificationContainer = document.getElementById('notification');
   
-    select.value = statusAtual;
-    modal.style.display = 'flex';
+  //cria elemento de notificação
+  const notification = document.createElement('div');
+  notification.className = `notification ${isError ? 'error' : 'success'}`;
   
-    function confirmar() {
+  //add icone conforme o tipo
+  const iconClass = isError ? 'fas fa-exclamation-circle' : 'fas fa-check-circle';
+  notification.innerHTML = `
+      <i class="${iconClass}"></i>
+      <span>${message}</span>
+  `;
+  
+  notificationContainer.appendChild(notification);
+  
+  setTimeout(() => {
+      notification.style.animation = 'fadeOut 0.3s ease forwards';
+      setTimeout(() => {
+          notification.remove();
+      }, 300);
+  }, 3000);
+}
+
+//funçes de ação
+function editarOcorrencia(id) {
+  window.location.href = `editar.html?id=${id}`;
+}
+
+async function deletarOcorrencia(id) {
+  try {
+      const response = await fetch(`http://localhost:3000/api/ocorrencias/${id}`, {
+          method: 'DELETE',
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+
+      if (!response.ok) throw new Error('Erro ao excluir ocorrência');
+      
+      showNotification('Ocorrência excluída com sucesso!', false);
+      setTimeout(() => {
+          window.location.href = 'ocorrencias.html';
+      }, 1500);
+  } catch (erro) {
+      showNotification(`Erro: ${erro.message}`, true);
+  }
+}
+
+function abrirModalStatus(id, statusAtual) {
+  const modal = document.getElementById('modal-status');
+  const select = document.getElementById('select-status');
+  const btnConfirmar = document.getElementById('btn-confirmar');
+  const btnCancelar = document.getElementById('btn-cancelar');
+  const closeModal = document.querySelector('.close-modal');
+
+  select.value = statusAtual;
+  modal.classList.add('active');
+
+  function fecharModalStatus() {
+      modal.classList.remove('active');
+      btnConfirmar.onclick = null;
+      btnCancelar.onclick = null;
+      closeModal.onclick = null;
+  }
+
+  function confirmar() {
       const novoStatus = select.value;
-      fecharModal();
-      callback(novoStatus);
-    }
-  
-    function cancelar() {
-      fecharModal();
-    }
-  
-    function fecharModal() {
-      modal.style.display = 'none';
-      btnConfirmar.removeEventListener('click', confirmar);
-      btnCancelar.removeEventListener('click', cancelar);
-    }
-  
-    btnConfirmar.addEventListener('click', confirmar);
-    btnCancelar.addEventListener('click', cancelar);
+      if (novoStatus !== statusAtual) {
+          atualizarStatus(id, novoStatus);
+      }
+      fecharModalStatus();
+  }
+
+  btnConfirmar.onclick = confirmar;
+  btnCancelar.onclick = fecharModalStatus;
+  closeModal.onclick = fecharModalStatus;
 }
 
+async function atualizarStatus(id, novoStatus) {
+  try {
+      const response = await fetch(`http://localhost:3000/api/ocorrencias/${id}`, {
+          method: 'PUT',
+          headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+          },
+          body: JSON.stringify({ status: novoStatus })
+      });
 
-  
+      if (!response.ok) throw new Error('Erro ao atualizar status');
+      
+      showNotification('Status atualizado com sucesso!', false);
+      setTimeout(() => location.reload(), 1500);
+  } catch (erro) {
+      showNotification(`Erro: ${erro.message}`, true);
+  }
+}
